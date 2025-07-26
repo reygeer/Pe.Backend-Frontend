@@ -28,15 +28,16 @@ router.post('/guardar', async (req, res) => {
   const {
     nombre, descripcion, marca, modelo,
     voltaje, potencia, corriente, precio,
-    imagen_base64
+    imagen_base64, proveedor_id
   } = req.body;
+
   try {
     const conn = await mysql.createConnection(dbConfig);
     await conn.execute(
       `INSERT INTO productos
-      (nombre, descripcion, marca, modelo, voltaje, potencia, corriente, precio, imagen_base64)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [nombre, descripcion, marca, modelo, voltaje, potencia, corriente, precio, imagen_base64]
+      (nombre, descripcion, marca, modelo, voltaje, potencia, corriente, precio, imagen_base64, proveedor_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [nombre, descripcion, marca, modelo, voltaje, potencia, corriente, precio, imagen_base64, proveedor_id]
     );
     await conn.end();
     res.json({ mensaje: 'Producto registrado correctamente' });
@@ -52,16 +53,18 @@ router.put('/:id', async (req, res) => {
   const {
     nombre, descripcion, marca, modelo,
     voltaje, potencia, corriente, precio,
-    imagen_base64
+    imagen_base64, proveedor_id
   } = req.body;
+
   try {
     const conn = await mysql.createConnection(dbConfig);
     await conn.execute(
       `UPDATE productos SET
       nombre = ?, descripcion = ?, marca = ?, modelo = ?,
-      voltaje = ?, potencia = ?, corriente = ?, precio = ?, imagen_base64 = ?
+      voltaje = ?, potencia = ?, corriente = ?, precio = ?,
+      imagen_base64 = ?, proveedor_id = ?
       WHERE id = ?`,
-      [nombre, descripcion, marca, modelo, voltaje, potencia, corriente, precio, imagen_base64, id]
+      [nombre, descripcion, marca, modelo, voltaje, potencia, corriente, precio, imagen_base64, proveedor_id, id]
     );
     await conn.end();
     res.json({ mensaje: 'Producto actualizado correctamente' });
