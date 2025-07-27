@@ -9,11 +9,16 @@ const dbConfig = {
   database: process.env.DB_NAME
 };
 
-// Obtener todas las importaciones
+// Obtener todas las importaciones con nombre del proveedor
 router.get('/', async (req, res) => {
   try {
     const conn = await mysql.createConnection(dbConfig);
-    const [rows] = await conn.execute('SELECT * FROM importaciones');
+    const [rows] = await conn.execute(`
+      SELECT i.*, p.nombre AS proveedor_nombre
+      FROM importaciones i
+      LEFT JOIN proveedores p ON i.proveedor_id = p.id
+      ORDER BY i.fecha DESC
+    `);
     await conn.end();
     res.json(rows);
   } catch (err) {
@@ -22,42 +27,61 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Registrar una nueva importación
-router.post('/guardar', async (req, res) => {
-  const { producto, cantidad, fecha, proveedor_id, observaciones } = req.body;
+// Registrar nueva importación
+router.post('/', async (req, res) => {
+  const { producto, proveedor_id, cantidad, fecha, descripcion } = req.body;
+
   try {
     const conn = await mysql.createConnection(dbConfig);
-    await conn.execute(
-      'INSERT INTO importaciones (producto, cantidad, fecha, proveedor_id, observaciones) VALUES (?, ?, ?, ?, ?)',
-      [producto, cantidad, fecha, proveedor_id, observaciones]
-    );
+    const [result] = await conn.execute(`
+      INSERT INTO importaciones (producto, proveedor_id, cantidad, fecha, descripcion)
+      VALUES (?, ?, ?, ?, ?)
+    `, [producto, proveedor_id, cantidad, fecha, descripcion]);
+
+    const [nueva] = await conn.execute(`
+      SELECT i.*, p.nombre AS proveedor_nombre
+      FROM importaciones i
+      LEFT JOIN proveedores p ON i.proveedor_id = p.id
+      WHERE i.id = ?
+    `, [result.insertId]);
+
     await conn.end();
-    res.json({ mensaje: 'Importación registrada correctamente' });
+    res.json(nueva[0]);
   } catch (err) {
-    console.error('Error al guardar importación:', err);
-    res.status(500).json({ error: 'Error al guardar importación' });
+    console.error('Error al registrar importación:', err);
+    res.status(500).json({ error: 'Error al registrar importación' });
   }
 });
 
-// Editar una importación existente
+// Actualizar importación existente
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { producto, cantidad, fecha, proveedor_id, observaciones } = req.body;
+  const { producto, proveedor_id, cantidad, fecha, descripcion } = req.body;
+
   try {
     const conn = await mysql.createConnection(dbConfig);
-    await conn.execute(
-      'UPDATE importaciones SET producto = ?, cantidad = ?, fecha = ?, proveedor_id = ?, observaciones = ? WHERE id = ?',
-      [producto, cantidad, fecha, proveedor_id, observaciones, id]
-    );
+    await conn.execute(`
+      UPDATE importaciones
+      SET producto = ?, proveedor_id = ?, cantidad = ?, fecha = ?, descripcion = ?
+      WHERE id = ?
+    `, [producto, proveedor_id, cantidad, fecha, descripcion, id]);
+
+    const [actualizada] = await conn.execute(`
+      SELECT i.*, p.nombre AS proveedor_nombre
+      FROM importaciones i
+      LEFT JOIN proveedores p ON i.proveedor_id = p.id
+      WHERE i.id = ?
+    `, [id]);
+
     await conn.end();
-    res.json({ mensaje: 'Importación actualizada correctamente' });
+    res.json(actualizada[0]);
   } catch (err) {
     console.error('Error al actualizar importación:', err);
     res.status(500).json({ error: 'Error al actualizar importación' });
   }
 });
 
-// Eliminar una importación
+// Eliminar importación
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
