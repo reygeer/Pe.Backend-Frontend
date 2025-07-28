@@ -22,14 +22,14 @@ router.get('/', async (req, res) => {
 
     for (let cot of cotizaciones) {
       const [productos] = await connection.query(`
-        SELECT p.nombre, cp.cantidad
+        SELECT p.nombre, cp.cantidad, p.precio
         FROM cotizacion_productos cp
         JOIN productos p ON cp.producto_id = p.id
         WHERE cp.cotizacion_id = ?
       `, [cot.id]);
 
       cot.productos = productos;
-      cot.total = productos.reduce((sum, p) => sum + p.cantidad * 100, 0); // puedes reemplazar con precio real
+      cot.total = productos.reduce((sum, p) => sum + p.precio * p.cantidad, 0);
     }
 
     res.json(cotizaciones);
@@ -43,7 +43,7 @@ router.get('/', async (req, res) => {
 
 // Registrar nueva cotización
 router.post('/', async (req, res) => {
-  const { cliente, fecha, productos } = req.body;
+  const { cliente, fecha, productos, total } = req.body;
 
   const connection = await mysql.createConnection(dbConfig);
   try {
@@ -59,10 +59,10 @@ router.post('/', async (req, res) => {
       clienteId = result.insertId;
     }
 
-    // Insertar cotización
+    // Insertar cotización con total
     const [cotizacionResult] = await connection.query(`
-      INSERT INTO cotizaciones (cliente_id, fecha) VALUES (?, ?)
-    `, [clienteId, fecha]);
+      INSERT INTO cotizaciones (cliente_id, fecha, total) VALUES (?, ?, ?)
+    `, [clienteId, fecha, total]);
 
     const cotizacionId = cotizacionResult.insertId;
 
