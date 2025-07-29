@@ -9,6 +9,8 @@ const proveedoresRoutes = require('./routes/proveedores');
 const clientesRoutes = require('./routes/clientes');
 const importacionesRoutes = require('./routes/importaciones');
 const cotizacionesRoutes = require('./routes/cotizaciones');
+const categoriasRoutes = require('./routes/categorias');
+
 
 
 app.use(cors());
@@ -21,6 +23,8 @@ app.use('/api/proveedores', proveedoresRoutes);
 app.use('/api/clientes', clientesRoutes);
 app.use('/api/importaciones', importacionesRoutes);
 app.use('/api/cotizaciones', cotizacionesRoutes);
+app.use('/api/categorias', categoriasRoutes);
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
