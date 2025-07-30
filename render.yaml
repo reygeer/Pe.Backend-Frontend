@@ -1,18 +1,17 @@
 services:
   - type: web
-    name: api-inventario
+    name: pe-backend-frontend
     env: node
-    plan: free
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: node index.js
     envVars:
       - key: DB_HOST
-        value: bhbhg4mwi9cqb5qrfq26-mysql.services.clever-cloud.com
+        value: bdz7f25tmmyom6vwfqzr-mysql.services.clever-cloud.com
+      - key: DB_PORT
+        value: 3306
       - key: DB_USER
-        value: utbf3adcimoj29ki
+        value: uhjhdejjsvcg9h8u
       - key: DB_PASSWORD
-        value: p1aMcPvV8OBFF0rvW9q6
+        value: UNlOhQJtlzulLlW3A2LE
       - key: DB_NAME
-        value: bhbhg4mwi9cqb5qrfq26
-      - key: PORT
-        value: 3000
+        value: bdz7f25tmmyom6vwfqzr
